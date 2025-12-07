@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>盈透证券股票成本与盈利计算器 | IB Stock Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .tab-button {
+            flex: 1;
+            padding: 15px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s;
+        }
+        
+        .tab-button.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .button:active {
+            transform: translateY(0);
+        }
+        
+        .result-box {
+            margin-top: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+            display: none;
+        }
+        
+        .result-box.show {
+            display: block;
+        }
+        
+        .result-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .result-section {
+            margin-bottom: 20px;
+        }
+        
+        .result-section h3 {
+            font-size: 16px;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .result-label {
+            color: #666;
+        }
+        
+        .result-value {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .result-value.positive {
+            color: #28a745;
+        }
+        
+        .result-value.negative {
+            color: #dc3545;
+        }
+        
+        .info-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e7f3ff;
+            border-radius: 8px;
+            border-left: 4px solid #2196F3;
+        }
+        
+        .info-box h4 {
+            color: #2196F3;
+            margin-bottom: 8px;
+        }
+        
+        .info-box ul {
+            margin-left: 20px;
+            color: #555;
+            line-height: 1.6;
+        }
+        
+        .transaction-list {
+            margin-bottom: 20px;
+        }
+        
+        .transaction-item {
+            display: grid;
+            grid-template-columns: 100px 1fr 1fr auto;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        
+        .transaction-item select,
+        .transaction-item input {
+            padding: 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+        }
+        
+        .remove-btn {
+            padding: 8px 12px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        
+        .add-btn {
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>盈透证券股票计算器</h1>
+            <p>Interactive Brokers Stock Cost & Profit Calculator</p>
+        </div>
+        
+        <div class="content">
+            <div class="tab-buttons">
+                <button class="tab-button active" onclick="switchTab('simple')">简单计算</button>
+                <button class="tab-button" onclick="switchTab('profit')">盈利计算</button>
+                <button class="tab-button" onclick="switchTab('multiple')">多笔交易</button>
+            </div>
+            
+            <!-- 简单计算 Tab -->
+            <div id="simple-tab" class="tab-content active">
+                <div class="row">
+                    <div class="form-group">
+                        <label>交易类型 Transaction Type</label>
+                        <select id="simple-type" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px;">
+                            <option value="buy">买入 Buy</option>
+                            <option value="sell">卖出 Sell</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="form-group">
+                        <label>股数 Shares</label>
+                        <input type="number" id="simple-shares" value="100" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>价格 Price ($)</label>
+                        <input type="number" id="simple-price" value="100" step="0.01" min="0">
+                    </div>
+                </div>
+                
+                <button class="button" onclick="calculateSimple()">计算 Calculate</button>
+                
+                <div id="simple-result" class="result-box"></div>
+                
+                <div class="info-box">
+                    <h4>📊 IB佣金规则</h4>
+                    <ul>
+                        <li>每股佣金: $0.0035</li>
+                        <li>最低佣金: $0.35</li>
+                        <li>最高佣金: 交易额的1%</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- 盈利计算 Tab -->
+            <div id="profit-tab" class="tab-content">
+                <h3 style="margin-bottom: 20px; color: #667eea;">买入信息 Buy Information</h3>
+                <div class="row">
+                    <div class="form-group">
+                        <label>买入股数 Buy Shares</label>
+                        <input type="number" id="buy-shares" value="100" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>买入价格 Buy Price ($)</label>
+                        <input type="number" id="buy-price" value="100" step="0.01" min="0">
+                    </div>
+                </div>
+                
+                <h3 style="margin: 30px 0 20px 0; color: #667eea;">卖出信息 Sell Information</h3>
+                <div class="row">
+                    <div class="form-group">
+                        <label>卖出股数 Sell Shares</label>
+                        <input type="number" id="sell-shares" value="100" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>卖出价格 Sell Price ($)</label>
+                        <input type="number" id="sell-price" value="110" step="0.01" min="0">
+                    </div>
+                </div>
+                
+                <button class="button" onclick="calculateProfit()">计算盈利 Calculate Profit</button>
+                
+                <div id="profit-result" class="result-box"></div>
+            </div>
+            
+            <!-- 多笔交易 Tab -->
+            <div id="multiple-tab" class="tab-content">
+                <h3 style="margin-bottom: 20px; color: #667eea;">交易记录 Transaction History</h3>
+                <div id="transactions-list" class="transaction-list">
+                    <div class="transaction-item">
+                        <select class="trans-type">
+                            <option value="buy">买入 Buy</option>
+                            <option value="sell">卖出 Sell</option>
+                        </select>
+                        <input type="number" class="trans-shares" placeholder="股数 Shares" value="100" min="1">
+                        <input type="number" class="trans-price" placeholder="价格 Price" value="100" step="0.01" min="0">
+                        <button class="remove-btn" onclick="removeTransaction(this)">删除</button>
+                    </div>
+                </div>
+                
+                <button class="add-btn" onclick="addTransaction()">➕ 添加交易</button>
+                
+                <button class="button" onclick="calculateMultiple()">计算总计 Calculate Total</button>
+                
+                <div id="multiple-result" class="result-box"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const COMMISSION_RATE = 0.0035;
+        const MIN_COMMISSION = 0.35;
+        const MAX_COMMISSION_RATE = 0.01;
+        
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tab + '-tab').classList.add('active');
+        }
+        
+        function calculateCommission(shares, price) {
+            const tradeValue = shares * price;
+            let commission = shares * COMMISSION_RATE;
+            
+            if (commission < MIN_COMMISSION) {
+                commission = MIN_COMMISSION;
+            }
+            
+            const maxCommission = tradeValue * MAX_COMMISSION_RATE;
+            if (commission > maxCommission) {
+                commission = maxCommission;
+            }
+            
+            return parseFloat(commission.toFixed(2));
+        }
+        
+        function calculateSimple() {
+            const type = document.getElementById('simple-type').value;
+            const shares = parseInt(document.getElementById('simple-shares').value);
+            const price = parseFloat(document.getElementById('simple-price').value);
+            
+            if (!shares || !price) {
+                alert('请输入有效的股数和价格');
+                return;
+            }
+            
+            const stockValue = shares * price;
+            const commission = calculateCommission(shares, price);
+            const total = type === 'buy' ? stockValue + commission : stockValue - commission;
+            const avgPrice = total / shares;
+            
+            const resultDiv = document.getElementById('simple-result');
+            const typeText = type === 'buy' ? '买入' : '卖出';
+            const typeName = type === 'buy' ? 'Buy' : 'Sell';
+            
+            resultDiv.innerHTML = `
+                <div class="result-title">${typeText}计算结果 ${typeName} Calculation Result</div>
+                <div class="result-section">
+                    <div class="result-item">
+                        <span class="result-label">股数 Shares:</span>
+                        <span class="result-value">${shares}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">价格 Price:</span>
+                        <span class="result-value">$${price.toFixed(2)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">股票价值 Stock Value:</span>
+                        <span class="result-value">$${stockValue.toFixed(2)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">佣金 Commission:</span>
+                        <span class="result-value">$${commission.toFixed(2)}</span>
+                    </div>
+                    <div class="result-item" style="border-top: 2px solid #667eea; margin-top: 10px; padding-top: 10px;">
+                        <span class="result-label" style="font-weight: 600;">
+                            ${type === 'buy' ? '总成本 Total Cost:' : '净收入 Net Proceeds:'}
+                        </span>
+                        <span class="result-value" style="font-size: 18px; color: #667eea;">
+                            $${total.toFixed(2)}
+                        </span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">
+                            ${type === 'buy' ? '平均成本/股 Avg Cost/Share:' : '平均收入/股 Avg Proceeds/Share:'}
+                        </span>
+                        <span class="result-value">$${avgPrice.toFixed(4)}</span>
+                    </div>
+                </div>
+            `;
+            
+            resultDiv.classList.add('show');
+        }
+        
+        function calculateProfit() {
+            const buyShares = parseInt(document.getElementById('buy-shares').value);
+            const buyPrice = parseFloat(document.getElementById('buy-price').value);
+            const sellShares = parseInt(document.getElementById('sell-shares').value);
+            const sellPrice = parseFloat(document.getElementById('sell-price').value);
+            
+            if (!buyShares || !buyPrice || !sellShares || !sellPrice) {
+                alert('请输入有效的数值');
+                return;
+            }
+            
+            if (sellShares > buyShares) {
+                alert('卖出股数不能大于买入股数');
+                return;
+            }
+            
+            const buyStockCost = buyShares * buyPrice;
+            const buyCommission = calculateCommission(buyShares, buyPrice);
+            const totalBuyCost = buyStockCost + buyCommission;
+            const avgBuyCost = totalBuyCost / buyShares;
+            
+            const sellStockValue = sellShares * sellPrice;
+            const sellCommission = calculateCommission(sellShares, sellPrice);
+            const netSellProceeds = sellStockValue - sellCommission;
+            
+            const costForSoldShares = avgBuyCost * sellShares;
+            const profit = netSellProceeds - costForSoldShares;
+            const profitPercentage = (profit / costForSoldShares) * 100;
+            
+            const remainingShares = buyShares - sellShares;
+            const remainingCost = totalBuyCost - costForSoldShares;
+            
+            const resultDiv = document.getElementById('profit-result');
+            
+            resultDiv.innerHTML = `
+                <div class="result-title">盈利计算结果 Profit Calculation Result</div>
+                
+                <div class="result-section">
+                    <h3>买入信息 Buy Information</h3>
+                    <div class="result-item">
+                        <span class="result-label">股数 Shares:</span>
+                        <span class="result-value">${buyShares}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">价格 Price:</span>
+                        <span class="result-value">$${buyPrice.toFixed(2)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">股票成本 Stock Cost:</span>
+                        <span class="result-value">$${buyStockCost.toFixed(2)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">佣金 Commission:</span>
+                        <span class="result-value">$${buyCommission.toFixed(2)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">总成本 Total Cost:</span>
+                        <span class="result-value">$${totalBuyCost.toFixed(2)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">平均成本/股 Avg Cost/Share:</span>
+                        <span class="result-value">$${avgBuyCost.toFixed(4)}</span>
+                    </div>
+                </div>
+                
+                <div class="result-section">
+                    <h3>卖出信息 Sell Information</h3>
+                    <div class="result-item">
+                        <span class="result-label">股数 Shares:</span>
+                        <span class="result-value">${sellShares}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">价格 Price:</span>
+                        <span class="result-value">$${sellPrice.toFixed(2)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">总收入 Gross Proceeds:</span>
+                        <span class="result-value">$${sellStockValue.toFixed(2)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">佣金 Commission:</span>
+                        <span class="result-value">$${sellCommission.toFixed(2)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">净收入 Net Proceeds:</span>
+                        <span class="result-value">$${netSellProceeds.toFixed(2)}</span>
+                    </div>
+                </div>
+                
+                <div class="result-section">
+                    <h3>盈利信息 Profit Information</h3>
+                    <div class="result-item">
+                        <span class="result-label">卖出股票成本 Cost for Sold Shares:</span>
+                        <span class="result-value">$${costForSoldShares.toFixed(2)}</span>
+                    </div>
+                    <div class="result-item" style="border-top: 2px solid #667eea; margin-top: 10px; padding-top: 10px;">
+                        <span class="result-label" style="font-weight: 600;">盈利 Profit:</span>
+                        <span class="result-value ${profit >= 0 ? 'positive' : 'negative'}" style="font-size: 18px;">
+                            $${profit.toFixed(2)}
+                        </span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">盈利率 Profit Percentage:</span>
+                        <span class="result-value ${profitPercentage >= 0 ? 'positive' : 'negative'}">
+                            ${profitPercentage.toFixed(2)}%
+                        </span>
+                    </div>
+                </div>
+                
+                ${remainingShares > 0 ? `
+                <div class="result-section">
+                    <h3>剩余持仓 Remaining Position</h3>
+                    <div class="result-item">
+                        <span class="result-label">剩余股数 Remaining Shares:</span>
+                        <span class="result-value">${remainingShares}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">剩余成本 Remaining Cost:</span>
+                        <span class="result-value">$${remainingCost.toFixed(2)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">平均成本/股 Avg Cost/Share:</span>
+                        <span class="result-value">$${avgBuyCost.toFixed(4)}</span>
+                    </div>
+                </div>
+                ` : ''}
+            `;
+            
+            resultDiv.classList.add('show');
+        }
+        
+        function addTransaction() {
+            const list = document.getElementById('transactions-list');
+            const newItem = document.createElement('div');
+            newItem.className = 'transaction-item';
+            newItem.innerHTML = `
+                <select class="trans-type">
+                    <option value="buy">买入 Buy</option>
+                    <option value="sell">卖出 Sell</option>
+                </select>
+                <input type="number" class="trans-shares" placeholder="股数 Shares" min="1">
+                <input type="number" class="trans-price" placeholder="价格 Price" step="0.01" min="0">
+                <button class="remove-btn" onclick="removeTransaction(this)">删除</button>
+            `;
+            list.appendChild(newItem);
+        }
+        
+        function removeTransaction(btn) {
+            const items = document.querySelectorAll('.transaction-item');
+            if (items.length > 1) {
+                btn.parentElement.remove();
+            } else {
+                alert('至少需要保留一笔交易');
+            }
+        }
+        
+        function calculateMultiple() {
+            const items = document.querySelectorAll('.transaction-item');
+            const transactions = [];
+            
+            for (let item of items) {
+                const type = item.querySelector('.trans-type').value;
+                const shares = parseInt(item.querySelector('.trans-shares').value);
+                const price = parseFloat(item.querySelector('.trans-price').value);
+                
+                if (!shares || !price) {
+                    alert('请填写所有交易的股数和价格');
+                    return;
+                }
+                
+                transactions.push({ type, shares, price });
+            }
+            
+            let totalShares = 0;
+            let totalCost = 0;
+            let totalProceeds = 0;
+            let totalBuyCommission = 0;
+            let totalSellCommission = 0;
+            let totalBuyShares = 0;
+            let totalSellShares = 0;
+            
+            const transactionDetails = [];
+            
+            for (let trans of transactions) {
+                if (trans.type === 'buy') {
+                    const stockCost = trans.shares * trans.price;
+                    const commission = calculateCommission(trans.shares, trans.price);
+                    const total = stockCost + commission;
+                    
+                    totalShares += trans.shares;
+                    totalCost += total;
+                    totalBuyCommission += commission;
+                    totalBuyShares += trans.shares;
+                    
+                    transactionDetails.push({
+                        type: 'buy',
+                        shares: trans.shares,
+                        price: trans.price,
+                        commission: commission,
+                        total: total
+                    });
+                } else {
+                    if (trans.shares > totalShares) {
+                        alert(`卖出股数 ${trans.shares} 超过持有股数 ${totalShares}`);
+                        return;
+                    }
+                    
+                    const stockValue = trans.shares * trans.price;
+                    const commission = calculateCommission(trans.shares, trans.price);
+                    const net = stockValue - commission;
+                    
+                    totalShares -= trans.shares;
+                    totalProceeds += net;
+                    totalSellCommission += commission;
+                    totalSellShares += trans.shares;
+                    
+                    transactionDetails.push({
+                        type: 'sell',
+                        shares: trans.shares,
+                        price: trans.price,
+                        commission: commission,
+                        total: net
+                    });
+                }
+            }
+            
+            const avgCostPerShare = totalBuyShares > 0 ? totalCost / totalBuyShares : 0;
+            const costForSoldShares = avgCostPerShare * totalSellShares;
+            const totalProfit = totalProceeds - costForSoldShares;
+            const profitPercentage = costForSoldShares > 0 ? (totalProfit / costForSoldShares) * 100 : 0;
+            
+            const resultDiv = document.getElementById('multiple-result');
+            
+            let detailsHtml = '';
+            transactionDetails.forEach((trans, index) => {
+                const typeText = trans.type === 'buy' ? '买入 Buy' : '卖出 Sell';
+                const typeName = trans.type === 'buy' ? 'Cost' : 'Proceeds';
+                detailsHtml += `
+                    <div class="result-section">
+                        <h3>交易 ${index + 1}: ${typeText}</h3>
+                        <div class="result-item">
+                            <span class="result-label">股数 Shares:</span>
+                            <span class="result-value">${trans.shares}</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">价格 Price:</span>
+                            <span class="result-value">$${trans.price.toFixed(2)}</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">佣金 Commission:</span>
+                            <span class="result-value">$${trans.commission.toFixed(2)}</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">总计 Total ${typeName}:</span>
+                            <span class="result-value">$${trans.total.toFixed(2)}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            resultDiv.innerHTML = `
+                <div class="result-title">多笔交易总计 Multiple Transactions Summary</div>
+                
+                ${detailsHtml}
+                
+                <div class="result-section" style="background: #f0f0f0; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                    <h3>总计 Total Summary</h3>
+                    <div class="result-item">
+                        <span class="result-label">剩余股数 Remaining Shares:</span>
+                        <span class="result-value">${totalShares}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">总买入成本 Total Buy Cost:</span>
+                        <span class="result-value">$${totalCost.toFixed(2)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">总卖出收入 Total Sell Proceeds:</span>
+                        <span class="result-value">$${totalProceeds.toFixed(2)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">买入佣金 Buy Commission:</span>
+                        <span class="result-value">$${totalBuyCommission.toFixed(2)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">卖出佣金 Sell Commission:</span>
+                        <span class="result-value">$${totalSellCommission.toFixed(2)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">总佣金 Total Commission:</span>
+                        <span class="result-value">$${(totalBuyCommission + totalSellCommission).toFixed(2)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">平均成本/股 Avg Cost/Share:</span>
+                        <span class="result-value">$${avgCostPerShare.toFixed(4)}</span>
+                    </div>
+                    <div class="result-item" style="border-top: 2px solid #667eea; margin-top: 10px; padding-top: 10px;">
+                        <span class="result-label" style="font-weight: 600;">总盈利 Total Profit:</span>
+                        <span class="result-value ${totalProfit >= 0 ? 'positive' : 'negative'}" style="font-size: 18px;">
+                            $${totalProfit.toFixed(2)}
+                        </span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">盈利率 Profit Percentage:</span>
+                        <span class="result-value ${profitPercentage >= 0 ? 'positive' : 'negative'}">
+                            ${profitPercentage.toFixed(2)}%
+                        </span>
+                    </div>
+                </div>
+            `;
+            
+            resultDiv.classList.add('show');
+        }
+    </script>
+</body>
+</html>
