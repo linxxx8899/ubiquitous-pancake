@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>儿童概率解谜游戏 | Probability Puzzles for Kids</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .game-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .game-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+        }
+
+        .game-card.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .game-card h2 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .game-card p {
+            font-size: 0.9em;
+            line-height: 1.5;
+            opacity: 0.8;
+        }
+
+        .game-area {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            min-height: 400px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            display: none;
+        }
+
+        .game-area.active {
+            display: block;
+        }
+
+        .game-title {
+            font-size: 2em;
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        .game-description {
+            font-size: 1.1em;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            color: #666;
+        }
+
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .button.secondary {
+            background: #6c757d;
+        }
+
+        .doors-container, .paths-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .door, .path-option {
+            width: 120px;
+            height: 180px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            font-size: 2em;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .door:hover, .path-option:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+
+        .door.opened {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .path-option {
+            height: auto;
+            padding: 20px;
+            font-size: 1em;
+            text-align: center;
+        }
+
+        .path-option .path-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .path-option .path-stats {
+            font-size: 0.85em;
+            line-height: 1.5;
+        }
+
+        .guess-input {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .guess-input input {
+            padding: 15px;
+            font-size: 1.2em;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            width: 150px;
+            text-align: center;
+        }
+
+        .message {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-size: 1.1em;
+        }
+
+        .message.success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+
+        .message.error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+
+        .statistics {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .statistics h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .slot-machine {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 30px 0;
+        }
+
+        .reel {
+            width: 100px;
+            height: 100px;
+            background: white;
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .probability-chart {
+            margin: 20px 0;
+        }
+
+        .chart-bar {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+
+        .chart-label {
+            width: 100px;
+            font-size: 1.5em;
+        }
+
+        .chart-fill {
+            height: 30px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 5px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0 10px;
+            color: white;
+            font-size: 0.9em;
+        }
+
+        .progress-bar {
+            background: #e9ecef;
+            border-radius: 10px;
+            height: 30px;
+            margin: 20px 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .door, .path-option {
+                width: 100px;
+                height: 150px;
+            }
+
+            .game-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎲 儿童概率解谜游戏</h1>
+            <p>Probability Puzzles for Kids</p>
+        </div>
+
+        <div class="game-selector">
+            <div class="game-card" onclick="selectGame('monty-hall')">
+                <h2>🚪 三门问题</h2>
+                <p>经典概率悖论，学习条件概率的魅力</p>
+                <p style="margin-top: 10px; opacity: 0.7;">Monty Hall Problem - Learn conditional probability</p>
+            </div>
+            <div class="game-card" onclick="selectGame('number-guess')">
+                <h2>🔢 猜数字</h2>
+                <p>通过反馈缩小范围，理解信息熵</p>
+                <p style="margin-top: 10px; opacity: 0.7;">Number Guessing - Understand information entropy</p>
+            </div>
+            <div class="game-card" onclick="selectGame('probability-race')">
+                <h2>🏁 概率赛道</h2>
+                <p>计算期望值，做出最优决策</p>
+                <p style="margin-top: 10px; opacity: 0.7;">Probability Race - Calculate expected values</p>
+            </div>
+            <div class="game-card" onclick="selectGame('slot-machine')">
+                <h2>🎰 概率模拟器</h2>
+                <p>观察大数定律，理解随机性</p>
+                <p style="margin-top: 10px; opacity: 0.7;">Slot Machine - Observe law of large numbers</p>
+            </div>
+        </div>
+
+        <!-- 三门问题游戏 -->
+        <div id="monty-hall" class="game-area">
+            <h2 class="game-title">🚪 三门问题 Monty Hall Problem</h2>
+            <p class="game-description">
+                三扇门中有一扇门后有汽车🚗，另外两扇门后是山羊🐐。你先选择一扇门，然后主持人会打开一扇有山羊的门，并给你一次更换选择的机会。换还是不换？
+                <br><br>
+                Behind one of three doors is a car 🚗, behind the other two are goats 🐐. You choose a door, then the host opens a door with a goat, and gives you a chance to switch. Should you switch?
+            </p>
+            <div id="monty-game-state"></div>
+            <div class="controls">
+                <button class="button" onclick="startMontyHall()">开始游戏 Start Game</button>
+                <button class="button secondary" onclick="simulateMontyHall()">模拟1000次 Simulate 1000x</button>
+            </div>
+            <div id="monty-simulation-results"></div>
+        </div>
+
+        <!-- 猜数字游戏 -->
+        <div id="number-guess" class="game-area">
+            <h2 class="game-title">🔢 猜数字游戏 Number Guessing Game</h2>
+            <p class="game-description">
+                我想了一个1到100之间的数字，请通过"太大"或"太小"的提示来猜出这个数字。你能用最少的次数猜中吗？
+                <br><br>
+                I'm thinking of a number between 1 and 100. Use "too high" or "too low" hints to guess it. Can you guess with minimum attempts?
+            </p>
+            <div class="controls">
+                <label>难度 Difficulty: </label>
+                <select id="difficulty-select" style="padding: 10px; border-radius: 5px; border: 2px solid #667eea;">
+                    <option value="easy">简单 Easy</option>
+                    <option value="medium" selected>中等 Medium</option>
+                    <option value="hard">困难 Hard</option>
+                </select>
+                <button class="button" onclick="startNumberGuess()">开始游戏 Start Game</button>
+            </div>
+            <div id="number-game-state"></div>
+        </div>
+
+        <!-- 概率赛道游戏 -->
+        <div id="probability-race" class="game-area">
+            <h2 class="game-title">🏁 概率赛道 Probability Race</h2>
+            <p class="game-description">
+                从起点到达终点，每个路口都要选择一条路径。不同的路径有不同的前进距离和成功概率。计算期望值，选择最优策略！
+                <br><br>
+                Reach the finish line by choosing paths at each junction. Different paths have different distances and success rates. Calculate expected values and choose wisely!
+            </p>
+            <div class="controls">
+                <button class="button" onclick="startProbabilityRace()">开始游戏 Start Game</button>
+            </div>
+            <div id="race-game-state"></div>
+        </div>
+
+        <!-- 老虎机模拟器 -->
+        <div id="slot-machine" class="game-area">
+            <h2 class="game-title">🎰 概率模拟器 Probability Simulator</h2>
+            <p class="game-description">
+                这是一个展示概率和大数定律的模拟器。每个符号有不同的出现概率。转动越多次，实际频率越接近理论概率！
+                <br><br>
+                This simulator demonstrates probability and the law of large numbers. Each symbol has different probabilities. The more you spin, the closer the actual frequency gets to theoretical probability!
+            </p>
+            <div class="statistics">
+                <h3>符号概率 Symbol Probabilities</h3>
+                <div class="probability-chart" id="symbol-probabilities"></div>
+            </div>
+            <div class="slot-machine" id="slot-reels">
+                <div class="reel">?</div>
+                <div class="reel">?</div>
+                <div class="reel">?</div>
+            </div>
+            <div class="controls">
+                <button class="button" onclick="spinSlot()">转动 Spin</button>
+                <button class="button secondary" onclick="spinMultiple(10)">转动10次 Spin 10x</button>
+                <button class="button secondary" onclick="spinMultiple(100)">转动100次 Spin 100x</button>
+                <button class="button secondary" onclick="resetSlot()">重置 Reset</button>
+            </div>
+            <div id="slot-message"></div>
+            <div id="slot-statistics"></div>
+        </div>
+    </div>
+
+    <script>
+        // 游戏状态
+        let currentGame = null;
+        let montyHallState = { car: 0, choice: 0, opened: 0, stage: 'initial' };
+        let numberGuessState = { target: 0, guesses: [], maxAttempts: 0, gameOver: false };
+        let raceState = { position: 0, target: 10, history: [] };
+        let slotState = { 
+            symbols: ['🍎', '🍌', '⭐', '🍒', '🔔'],
+            probabilities: [0.35, 0.25, 0.20, 0.15, 0.05],
+            history: [],
+            symbolCounts: {}
+        };
+
+        // 初始化老虎机符号计数
+        slotState.symbols.forEach(s => slotState.symbolCounts[s] = 0);
+
+        // 显示符号概率
+        function displaySymbolProbabilities() {
+            const container = document.getElementById('symbol-probabilities');
+            container.innerHTML = slotState.symbols.map((symbol, i) => {
+                const prob = slotState.probabilities[i];
+                return `
+                    <div class="chart-bar">
+                        <div class="chart-label">${symbol}</div>
+                        <div class="chart-fill" style="width: ${prob * 100}%; min-width: 60px;">
+                            ${(prob * 100).toFixed(0)}%
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 选择游戏
+        function selectGame(gameId) {
+            // 更新卡片状态
+            document.querySelectorAll('.game-card').forEach(card => card.classList.remove('active'));
+            event.target.closest('.game-card').classList.add('active');
+
+            // 显示对应游戏区域
+            document.querySelectorAll('.game-area').forEach(area => area.classList.remove('active'));
+            document.getElementById(gameId).classList.add('active');
+
+            currentGame = gameId;
+
+            // 特殊初始化
+            if (gameId === 'slot-machine') {
+                displaySymbolProbabilities();
+            }
+        }
+
+        // === 三门问题 ===
+        function startMontyHall() {
+            montyHallState = {
+                car: Math.floor(Math.random() * 3) + 1,
+                choice: 0,
+                opened: 0,
+                stage: 'choosing'
+            };
+
+            const html = `
+                <div class="message">请选择一扇门 Please choose a door</div>
+                <div class="doors-container">
+                    <div class="door" onclick="chooseDoor(1)">🚪<br>1</div>
+                    <div class="door" onclick="chooseDoor(2)">🚪<br>2</div>
+                    <div class="door" onclick="chooseDoor(3)">🚪<br>3</div>
+                </div>
+            `;
+            document.getElementById('monty-game-state').innerHTML = html;
+        }
+
+        function chooseDoor(doorNum) {
+            if (montyHallState.stage !== 'choosing') return;
+
+            montyHallState.choice = doorNum;
+            montyHallState.stage = 'switching';
+
+            // 主持人打开一扇有山羊的门
+            const availableDoors = [1, 2, 3].filter(d => d !== montyHallState.car && d !== doorNum);
+            montyHallState.opened = availableDoors[Math.floor(Math.random() * availableDoors.length)];
+
+            const remainingDoor = [1, 2, 3].find(d => d !== doorNum && d !== montyHallState.opened);
+
+            const html = `
+                <div class="message">
+                    你选择了门${doorNum}。主持人打开了门${montyHallState.opened}，里面是山羊🐐！
+                    <br>
+                    You chose door ${doorNum}. The host opened door ${montyHallState.opened}, revealing a goat 🐐!
+                    <br><br>
+                    你要换到门${remainingDoor}吗？
+                    <br>
+                    Do you want to switch to door ${remainingDoor}?
+                </div>
+                <div class="doors-container">
+                    ${[1, 2, 3].map(d => {
+                        if (d === montyHallState.opened) {
+                            return `<div class="door opened">🐐<br>${d}<br>(已打开)</div>`;
+                        } else if (d === doorNum) {
+                            return `<div class="door" style="border: 3px solid gold;">🚪<br>${d}<br>(你的选择)</div>`;
+                        } else {
+                            return `<div class="door">🚪<br>${d}</div>`;
+                        }
+                    }).join('')}
+                </div>
+                <div class="controls">
+                    <button class="button" onclick="finalDecision(false)">不换 Stay</button>
+                    <button class="button" onclick="finalDecision(true)">换门 Switch</button>
+                </div>
+            `;
+            document.getElementById('monty-game-state').innerHTML = html;
+        }
+
+        function finalDecision(shouldSwitch) {
+            if (montyHallState.stage !== 'switching') return;
+
+            const finalChoice = shouldSwitch 
+                ? [1, 2, 3].find(d => d !== montyHallState.choice && d !== montyHallState.opened)
+                : montyHallState.choice;
+
+            const won = finalChoice === montyHallState.car;
+
+            const html = `
+                <div class="message ${won ? 'success' : 'error'}">
+                    ${shouldSwitch ? '你选择了换门' : '你选择了不换'} | ${shouldSwitch ? 'You switched' : 'You stayed'}
+                    <br><br>
+                    汽车在门${montyHallState.car}！${won ? '🎉 你赢了！' : '😢 你输了！'}
+                    <br>
+                    The car was behind door ${montyHallState.car}! ${won ? '🎉 You won!' : '😢 You lost!'}
+                </div>
+                <div class="doors-container">
+                    ${[1, 2, 3].map(d => {
+                        const content = d === montyHallState.car ? '🚗' : '🐐';
+                        const label = d === finalChoice ? '(你的最终选择)' : d === montyHallState.opened ? '(已打开)' : '';
+                        return `<div class="door opened">${content}<br>${d}<br>${label}</div>`;
+                    }).join('')}
+                </div>
+                <div class="controls">
+                    <button class="button" onclick="startMontyHall()">再玩一次 Play Again</button>
+                </div>
+            `;
+            document.getElementById('monty-game-state').innerHTML = html;
+            montyHallState.stage = 'finished';
+        }
+
+        function simulateMontyHall() {
+            let switchWins = 0;
+            let stayWins = 0;
+            const trials = 1000;
+
+            for (let i = 0; i < trials; i++) {
+                const car = Math.floor(Math.random() * 3) + 1;
+                const choice = 1; // 总是选择门1
+
+                // 换门策略
+                const availableDoors = [1, 2, 3].filter(d => d !== car && d !== choice);
+                const opened = availableDoors[Math.floor(Math.random() * availableDoors.length)];
+                const switchChoice = [1, 2, 3].find(d => d !== choice && d !== opened);
+                if (switchChoice === car) switchWins++;
+
+                // 不换门策略
+                if (choice === car) stayWins++;
+            }
+
+            const html = `
+                <div class="statistics">
+                    <h3>模拟${trials}次游戏的结果 Simulation Results (${trials} games)</h3>
+                    <div class="stat-item">
+                        <span>换门策略胜率 Switch strategy:</span>
+                        <strong>${(switchWins / trials * 100).toFixed(1)}%</strong>
+                    </div>
+                    <div class="stat-item">
+                        <span>不换策略胜率 Stay strategy:</span>
+                        <strong>${(stayWins / trials * 100).toFixed(1)}%</strong>
+                    </div>
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #667eea; color: #667eea; font-weight: bold;">
+                        结论：换门策略的胜率约为2/3！<br>
+                        Conclusion: Switching has approximately 2/3 win rate!
+                    </div>
+                </div>
+            `;
+            document.getElementById('monty-simulation-results').innerHTML = html;
+        }
+
+        // === 猜数字游戏 ===
+        function startNumberGuess() {
+            const difficulty = document.getElementById('difficulty-select').value;
+            const min = 1, max = 100;
+            const range = max - min;
+            
+            const maxAttempts = {
+                'easy': Math.ceil(Math.log2(range)) + 5,
+                'medium': Math.ceil(Math.log2(range)) + 2,
+                'hard': Math.ceil(Math.log2(range))
+            }[difficulty];
+
+            numberGuessState = {
+                target: Math.floor(Math.random() * range) + min,
+                guesses: [],
+                maxAttempts: maxAttempts,
+                gameOver: false,
+                min: min,
+                max: max
+            };
+
+            const html = `
+                <div class="message">
+                    我想了一个${min}到${max}之间的数字，你有${maxAttempts}次机会！
+                    <br>
+                    I'm thinking of a number between ${min} and ${max}. You have ${maxAttempts} attempts!
+                </div>
+                <div class="guess-input">
+                    <input type="number" id="guess-input" min="${min}" max="${max}" placeholder="输入数字">
+                    <button class="button" onclick="makeGuess()">猜测 Guess</button>
+                </div>
+                <div id="guess-history"></div>
+            `;
+            document.getElementById('number-game-state').innerHTML = html;
+
+            // 添加回车键支持
+            document.getElementById('guess-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') makeGuess();
+            });
+        }
+
+        function makeGuess() {
+            if (numberGuessState.gameOver) return;
+
+            const input = document.getElementById('guess-input');
+            const guess = parseInt(input.value);
+
+            if (isNaN(guess) || guess < numberGuessState.min || guess > numberGuessState.max) {
+                alert(`请输入${numberGuessState.min}到${numberGuessState.max}之间的数字 Please enter a number between ${numberGuessState.min} and ${numberGuessState.max}`);
+                return;
+            }
+
+            numberGuessState.guesses.push(guess);
+            const attemptsLeft = numberGuessState.maxAttempts - numberGuessState.guesses.length;
+
+            input.value = '';
+
+            if (guess === numberGuessState.target) {
+                numberGuessState.gameOver = true;
+                const html = `
+                    <div class="message success">
+                        🎉 恭喜！你用${numberGuessState.guesses.length}次就猜对了！
+                        <br>
+                        🎉 Congratulations! You guessed it in ${numberGuessState.guesses.length} attempts!
+                    </div>
+                    ${displayGuessHistory()}
+                    <div class="controls">
+                        <button class="button" onclick="startNumberGuess()">再玩一次 Play Again</button>
+                    </div>
+                `;
+                document.getElementById('number-game-state').innerHTML = html;
+            } else if (attemptsLeft === 0) {
+                numberGuessState.gameOver = true;
+                const html = `
+                    <div class="message error">
+                        😢 很遗憾，次数用完了！答案是${numberGuessState.target}。
+                        <br>
+                        😢 Sorry, you're out of attempts! The answer was ${numberGuessState.target}.
+                    </div>
+                    ${displayGuessHistory()}
+                    <div class="controls">
+                        <button class="button" onclick="startNumberGuess()">再玩一次 Play Again</button>
+                    </div>
+                `;
+                document.getElementById('number-game-state').innerHTML = html;
+            } else {
+                const hint = guess > numberGuessState.target ? '太大了 Too high' : '太小了 Too low';
+                document.getElementById('guess-history').innerHTML = `
+                    <div class="message">
+                        ${hint}！还有${attemptsLeft}次机会 ${attemptsLeft} attempts left
+                    </div>
+                    ${displayGuessHistory()}
+                `;
+            }
+        }
+
+        function displayGuessHistory() {
+            return `
+                <div class="statistics">
+                    <h3>猜测历史 Guess History</h3>
+                    ${numberGuessState.guesses.map((g, i) => {
+                        const result = g === numberGuessState.target ? '✓ 正确!' : 
+                                     g > numberGuessState.target ? '↓ 太大' : '↑ 太小';
+                        return `<div class="stat-item"><span>第${i+1}次: ${g}</span><span>${result}</span></div>`;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        // === 概率赛道游戏 ===
+        function startProbabilityRace() {
+            raceState = {
+                position: 0,
+                target: 10,
+                history: []
+            };
+            showRacePaths();
+        }
+
+        function showRacePaths() {
+            if (raceState.position >= raceState.target) {
+                const html = `
+                    <div class="message success">
+                        🏆 恭喜到达终点！总共走了${raceState.history.length}步。
+                        <br>
+                        🏆 Congratulations! You reached the finish in ${raceState.history.length} steps!
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 100%;">完成!</div>
+                    </div>
+                    ${displayRaceHistory()}
+                    <div class="controls">
+                        <button class="button" onclick="startProbabilityRace()">再玩一次 Play Again</button>
+                    </div>
+                `;
+                document.getElementById('race-game-state').innerHTML = html;
+                return;
+            }
+
+            // 生成路径选项
+            const paths = generatePaths();
+
+            const html = `
+                <div class="message">
+                    当前位置 Current position: ${raceState.position} / ${raceState.target}
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${raceState.position / raceState.target * 100}%">
+                        ${raceState.position}/${raceState.target}
+                    </div>
+                </div>
+                <div class="paths-container">
+                    ${paths.map(path => `
+                        <div class="path-option" onclick='choosePath(${JSON.stringify(path)})'>
+                            <div class="path-name">${path.name}</div>
+                            <div class="path-stats">
+                                前进: ${path.distance}步<br>
+                                成功率: ${(path.successRate * 100).toFixed(0)}%<br>
+                                期望值: ${path.expectedValue.toFixed(2)}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                ${raceState.history.length > 0 ? displayRaceHistory() : ''}
+            `;
+            document.getElementById('race-game-state').innerHTML = html;
+        }
+
+        function generatePaths() {
+            return [
+                {
+                    id: 'safe',
+                    name: '🛡️ 安全路径',
+                    distance: Math.floor(Math.random() * 2) + 1,
+                    successRate: 1.0,
+                    penalty: 0,
+                    get expectedValue() { return this.distance * this.successRate; }
+                },
+                {
+                    id: 'risky',
+                    name: '⚡ 冒险路径',
+                    distance: Math.floor(Math.random() * 3) + 3,
+                    successRate: Math.random() * 0.2 + 0.5,
+                    penalty: -1,
+                    get expectedValue() { return this.distance * this.successRate; }
+                },
+                {
+                    id: 'balanced',
+                    name: '⚖️ 平衡路径',
+                    distance: Math.floor(Math.random() * 2) + 2,
+                    successRate: Math.random() * 0.15 + 0.75,
+                    penalty: 0,
+                    get expectedValue() { return this.distance * this.successRate; }
+                }
+            ];
+        }
+
+        function choosePath(path) {
+            const success = Math.random() < path.successRate;
+            const oldPosition = raceState.position;
+
+            if (success) {
+                raceState.position += path.distance;
+            } else if (path.penalty < 0) {
+                raceState.position = Math.max(0, raceState.position + path.penalty);
+            }
+
+            raceState.history.push({
+                path: path.name,
+                success: success,
+                oldPosition: oldPosition,
+                newPosition: raceState.position
+            });
+
+            showRacePaths();
+        }
+
+        function displayRaceHistory() {
+            return `
+                <div class="statistics">
+                    <h3>行动历史 Action History</h3>
+                    ${raceState.history.map((h, i) => `
+                        <div class="stat-item">
+                            <span>第${i+1}步: ${h.path}</span>
+                            <span>${h.success ? '✓' : '✗'} ${h.oldPosition}→${h.newPosition}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // === 老虎机模拟器 ===
+        function spinSlot() {
+            const result = [];
+            const reels = document.querySelectorAll('.reel');
+
+            // 动画效果
+            reels.forEach(reel => {
+                reel.style.transform = 'rotateX(360deg)';
+                reel.style.transition = 'transform 0.5s';
+            });
+
+            setTimeout(() => {
+                for (let i = 0; i < 3; i++) {
+                    const symbol = weightedRandom(slotState.symbols, slotState.probabilities);
+                    result.push(symbol);
+                    slotState.symbolCounts[symbol]++;
+                    reels[i].textContent = symbol;
+                    reels[i].style.transform = 'rotateX(0deg)';
+                }
+
+                slotState.history.push(result);
+
+                // 判断中奖
+                const uniqueSymbols = new Set(result);
+                let message = '';
+                let messageClass = '';
+
+                if (uniqueSymbols.size === 1) {
+                    message = `🎉 大奖！三个${result[0]}！Jackpot!`;
+                    messageClass = 'success';
+                } else if (uniqueSymbols.size === 2) {
+                    message = '🎊 小奖！两个相同！Small win!';
+                    messageClass = 'success';
+                } else {
+                    message = '再试一次！Try again!';
+                    messageClass = '';
+                }
+
+                document.getElementById('slot-message').innerHTML = `
+                    <div class="message ${messageClass}">${message}</div>
+                `;
+
+                updateSlotStatistics();
+            }, 500);
+        }
+
+        function spinMultiple(times) {
+            let count = 0;
+            const interval = setInterval(() => {
+                if (count >= times) {
+                    clearInterval(interval);
+                    return;
+                }
+                spinSlot();
+                count++;
+            }, 600);
+        }
+
+        function resetSlot() {
+            slotState.history = [];
+            slotState.symbols.forEach(s => slotState.symbolCounts[s] = 0);
+            document.getElementById('slot-message').innerHTML = '';
+            document.getElementById('slot-statistics').innerHTML = '';
+            document.querySelectorAll('.reel').forEach(reel => reel.textContent = '?');
+        }
+
+        function updateSlotStatistics() {
+            const totalSpins = slotState.history.length;
+            const totalSymbols = totalSpins * 3;
+
+            const frequencies = {};
+            slotState.symbols.forEach((symbol, i) => {
+                const count = slotState.symbolCounts[symbol];
+                const actualFreq = totalSymbols > 0 ? count / totalSymbols : 0;
+                const expectedFreq = slotState.probabilities[i];
+                frequencies[symbol] = { actual: actualFreq, expected: expectedFreq, count: count };
+            });
+
+            const html = `
+                <div class="statistics">
+                    <h3>统计数据 Statistics (总转动次数 Total spins: ${totalSpins})</h3>
+                    <div style="margin: 15px 0;">
+                        ${slotState.symbols.map(symbol => {
+                            const freq = frequencies[symbol];
+                            return `
+                                <div class="stat-item">
+                                    <span>${symbol} (次数: ${freq.count})</span>
+                                    <span>
+                                        实际: ${(freq.actual * 100).toFixed(1)}% | 
+                                        期望: ${(freq.expected * 100).toFixed(0)}%
+                                    </span>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                    ${totalSpins >= 100 ? `
+                        <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #667eea; color: #667eea;">
+                            💡 观察：转动次数越多，实际频率越接近期望概率！<br>
+                            💡 Observation: The more spins, the closer actual frequency gets to expected probability!
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            document.getElementById('slot-statistics').innerHTML = html;
+        }
+
+        function weightedRandom(items, weights) {
+            const totalWeight = weights.reduce((a, b) => a + b, 0);
+            let random = Math.random() * totalWeight;
+
+            for (let i = 0; i < items.length; i++) {
+                random -= weights[i];
+                if (random <= 0) {
+                    return items[i];
+                }
+            }
+            return items[items.length - 1];
+        }
+
+        // 默认选择第一个游戏
+        window.addEventListener('DOMContentLoaded', () => {
+            selectGame('monty-hall');
+        });
+    </script>
+</body>
+</html>
