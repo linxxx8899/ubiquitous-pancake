@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>欢迎 | Welcome</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.3em;
+            opacity: 0.9;
+        }
+
+        .apps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .app-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .app-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .app-icon {
+            font-size: 5em;
+            margin-bottom: 20px;
+        }
+
+        .app-card h2 {
+            font-size: 2em;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .app-card p {
+            font-size: 1.1em;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .app-card .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-size: 1.2em;
+            text-decoration: none;
+            display: inline-block;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .app-card .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+
+        .features {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .feature {
+            display: flex;
+            align-items: center;
+            color: #555;
+        }
+
+        .feature::before {
+            content: "✓";
+            margin-right: 10px;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .apps {
+                grid-template-columns: 1fr;
+            }
+
+            .app-card {
+                padding: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 工具中心</h1>
+            <p>Tool Center</p>
+        </div>
+
+        <div class="apps">
+            <div class="app-card">
+                <div class="app-icon">💹</div>
+                <h2>股票计算器</h2>
+                <p>Stock Calculator</p>
+                <p style="font-size: 0.95em;">
+                    计算盈透证券的股票交易成本、佣金和盈利
+                    <br><br>
+                    Calculate Interactive Brokers stock trading costs, commissions, and profits
+                </p>
+                <div class="features">
+                    <div class="feature">自动佣金计算 Auto commission calculation</div>
+                    <div class="feature">盈利分析 Profit analysis</div>
+                    <div class="feature">多笔交易支持 Multiple transactions</div>
+                </div>
+                <a href="index.html" class="button">打开 Open</a>
+            </div>
+
+            <div class="app-card">
+                <div class="app-icon">🎲</div>
+                <h2>概率解谜游戏</h2>
+                <p>Probability Puzzles</p>
+                <p style="font-size: 0.95em;">
+                    通过互动游戏学习概率概念，适合儿童和初学者
+                    <br><br>
+                    Learn probability concepts through interactive games for kids and beginners
+                </p>
+                <div class="features">
+                    <div class="feature">三门问题 Monty Hall Problem</div>
+                    <div class="feature">猜数字游戏 Number Guessing</div>
+                    <div class="feature">概率赛道 Probability Race</div>
+                    <div class="feature">概率模拟器 Probability Simulator</div>
+                </div>
+                <a href="probability_puzzles.html" class="button">开始游戏 Start Game</a>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>所有工具均为开源免费 | All tools are open source and free</p>
+        </div>
+    </div>
+</body>
+</html>
